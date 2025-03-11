@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Integer, Boolean, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
@@ -13,6 +13,9 @@ class Role(Base):
     # Relationship: one role can have many auditions
     auditions = relationship('Audition', back_populates='role')
     
+    def __repr__(self):
+        return f"<Role(id={self.id}, character_name='{self.character_name}')>"
+
     def actors(self):
         # Returns list of actor names for this role
         return [audition.actor for audition in self.auditions]
@@ -26,14 +29,15 @@ class Role(Base):
         hired_auditions = [a for a in self.auditions if a.hired]
         if hired_auditions:
             return hired_auditions[0]
-        return 'no actor has been hired for this role'
+        return None
     
     def understudy(self):
         # Find the second hired actor
         hired_auditions = [a for a in self.auditions if a.hired]
         if len(hired_auditions) >= 2:
             return hired_auditions[1]
-        return 'no actor has been hired for understudy for this role'
+        return None
+
 
 class Audition(Base):
     __tablename__ = 'auditions'
@@ -47,7 +51,10 @@ class Audition(Base):
     
     # Relationship: each audition belongs to one role
     role = relationship('Role', back_populates='auditions')
-    
+
+    def __repr__(self):
+        return f"<Audition(id={self.id}, actor='{self.actor}', location='{self.location}', hired={self.hired})>"
+
     def call_back(self):
         # Change hired status to True
         self.hired = True
